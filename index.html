@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Roomba</title>
+    <style>* { padding: 0; margin: 0;  } canvas { background: #eee; display: block; margin:  auto; }</style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="580" height="420"></canvas>
+
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    var ballRadius = 10;
+    var x = canvas.width/2;
+    var y = canvas.height -30;
+    var dx = 3;
+    var dy = -3;
+    var brickRowCount = 4;
+    var brickColumnCount = 5;
+    var brickWidth = 50;
+    var brickHeight = 50;
+    var brickPadding = 40;
+    var brickOffsetTop = 100;
+    var brickOffsetLeft = 100;
+    var score = 0;
+    let battery = 1000;
+    let move = 0;
+
+    var bricks = [];
+    for(var c=0; c<brickColumnCount; c++) {
+        bricks[c] = [];
+        for(var r=0; r<brickRowCount; r++) {
+            bricks[c][r] = { x: 0, y: 0, status: 1 };
+        }
+    }
+
+    
+
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+        move -= 10
+    }
+    
+    function drawBricks() {
+        for(var c=0; c<brickColumnCount; c++) {
+        for(var r=0; r<brickRowCount; r++) {
+            if(bricks[c][r].status == 1) {
+                var brickX = (c*(brickWidth+brickPadding))+brickOffsetLeft;
+                var brickY = (r*(brickHeight+brickPadding))+brickOffsetTop;
+                bricks[c][r].x = brickX;
+                bricks[c][r].y = brickY;
+                ctx.beginPath();
+                ctx.rect(brickX * Math.random(), brickY * Math.random(), brickWidth , brickHeight);
+                ctx.fillStyle = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
+                ctx.fill();
+                ctx.closePath();
+                battery-= 0.001
+                
+                
+            }
+        }
+    }
+}
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBricks();
+        drawBall();
+        collisionDetection();
+        drawScore();
+        batteryLife()
+        movementPoint()
+
+        if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+            dx = -dx;
+        }
+      
+        if(y + dy > canvas.height-ballRadius || y + dy < ballRadius) {
+        dy = -dy;
+    }
+
+        x += dx;
+        y += dy;
+    }
+
+  
+function collisionDetection() {
+    for(var c=0; c<brickColumnCount; c++) {
+        for(var r=0; r<brickRowCount; r++) {
+            var b = bricks[c][r];
+            //calculation
+            if(b.status == 1) {
+                if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+                    dy = -dy;
+                    b.status = 0;
+                    score += 250;
+                    if(score == brickRowCount*brickColumnCount) {
+                        alert("YOU WIN, CONGRATULATIONS!");
+                        document.location.reload();
+                        clearInterval(interval);
+                    }
+                }
+            }
+        }
+    }
+}
+
+function drawScore() {
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("Score: "+score, 8, 20);
+    ctx.margin = 5; 
+}
+  
+function batteryLife(){
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("battery: "+battery, 120, 20);
+    ctx.margin = 5; 
+
+}
+function movementPoint(){
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("move: "+move, 350, 20);
+    ctx.margin = 5; 
+
+}
+  setInterval(draw, 5);
+</script>
+
+</body>
+</html>
